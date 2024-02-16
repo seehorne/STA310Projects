@@ -1,0 +1,42 @@
+---
+title: "Project_1"
+author: "Owen Gould"
+date: "2024-02-16"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+#install.packages("plotly")
+library(plotly)
+df <- read.csv("https://grinnell-statistics.github.io/sta-310-s24/projects/USStates.csv")
+```
+
+```{r}
+df <- df %>%
+  mutate(CovidMortalityRate = deaths / cases)
+#ggplot(df, aes(HighSchool, CovidMortalityRate)) +
+  #geom_point(aes(size = HouseholdIncome)) +
+  #geom_smooth(method = "lm", se = FALSE)
+```
+
+```{r}
+plot_ly(df, x = ~HighSchool, y = ~HouseholdIncome, z = ~CovidMortalityRate)
+```
+
+```{r}
+ggplot(df, aes(HighSchool, HouseholdIncome)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+cor(df$HighSchool, df$HouseholdIncome)
+```
+
+```{r}
+mod <- lm(CovidMortalityRate ~ Insured + HighSchool + HouseholdIncome + Biden\Vote2020, data = df)
+summary(mod)
+```
+
+Settle on research question (high school, household income, insurance)
+
