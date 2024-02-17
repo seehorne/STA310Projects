@@ -1,6 +1,6 @@
 ---
 title: "Project_1"
-author: "Owen Gould"
+author: "Owen Gould, Boston Gunderson, Ellie Seehorn"
 date: "2024-02-16"
 output: pdf_document
 ---
