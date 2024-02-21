@@ -1,6 +1,6 @@
 ---
 title: "Project_1"
-author: "Owen Gould, Boston Gunderson, Ellie Seehorn"
+author: "Owen Gould"
 date: "2024-02-16"
 output: pdf_document
 ---
@@ -9,34 +9,26 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(ggplot2)
-#install.packages("plotly")
 library(plotly)
 df <- read.csv("https://grinnell-statistics.github.io/sta-310-s24/projects/USStates.csv")
 ```
 
 ```{r}
+# Add `CovidMortalityRate` variable to our data frame
 df <- df %>%
-  mutate(CovidMortalityRate = deaths / cases)
-#ggplot(df, aes(HighSchool, CovidMortalityRate)) +
-  #geom_point(aes(size = HouseholdIncome)) +
-  #geom_smooth(method = "lm", se = FALSE)
-```
-
-```{r}
-plot_ly(df, x = ~HighSchool, y = ~HouseholdIncome, z = ~CovidMortalityRate)
-```
-
-```{r}
-ggplot(df, aes(HighSchool, HouseholdIncome)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
-cor(df$HighSchool, df$HouseholdIncome)
-```
-
-```{r}
-mod <- lm(CovidMortalityRate ~ Insured + HighSchool + HouseholdIncome + Biden\Vote2020, data = df)
+  mutate(CovidMortalityRate = (deaths / cases) * 100)
+mod <- lm(CovidMortalityRate ~ Insured + HighSchool + HouseholdIncome, data = df)
 summary(mod)
+plot(mod)
 ```
-
-Settle on research question (high school, household income, insurance)
-
+Fitted mode: $\hat{y}=8.746654 + 0.056223\text{Insured} -0.136215\text{HighSchool} + 0.005709\text{HouseoldIncome}$.
+Multiple R-squared = $0.3034$ (low). *Variability not super well-explained by linear relationship between resposne and predictors*.
+`Insured` significant (p-value of around $0.001$), `HighSchool` highly significant (p-value of nearly $0$), `HouseholdIncome` not significant (p-value of around $0.39$) *Shows which covariates are statistically significant*.
+F-statistic: 6.667 on 3 and 46 DF with associated p-value of nearly zero. *Overall model is strong*.
+Model assumptions feel fair (move plots to Appendix).
+Check assumptions (of equal variance, etc.) individually?
+Surprising that `Insured` and `HouseholdIncome` were instead positively associated with covid mortality rate and that `HighSchool` was *negatively* associated with covid mortality rate.
+Generalizations: if socioeconomic factors predict health outcomes/response to Covid, generalize to other pandemics?
+Limitations/concerns: `HoldholdIncome` measured with mean instead of median (mean more sensitive to outliers); one data point in time (pandemic and response to it changed over time); reporting of data (Covid morality rate calculations)?
+*Find out if zero is in 95% confint for slope coefficients*
+Further Research: why were the results what we expected?
