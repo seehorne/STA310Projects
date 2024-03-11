@@ -1,0 +1,19 @@
+---
+title: "Chapter 2 Project"
+author: "Owen Gould"
+date: "2024-03-11"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+df <- read.csv("https://grinnell-statistics.github.io/sta-310-s24/projects/Faculty.csv")
+df <- df %>%
+  mutate(Simple_Dept = ifelse(Dept != "Statistics", "English", "Statistics"))
+mod <- lm(Salary ~ Gender * Title2 * Simple_Dept, data = df)
+summary(mod)
+```
+
