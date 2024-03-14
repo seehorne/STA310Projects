@@ -1,0 +1,31 @@
+---
+title: "Nested ANoVA ;)"
+author: "Stats Group"
+date: "2024-03-14"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+```
+
+```{r}
+FacSal <- read.csv("https://grinnell-statistics.github.io/sta-310-s24/projects/Faculty.csv")
+```
+
+```{r}
+Facsal <- FacSal |> 
+  mutate(Dept = ifelse(Dept != "Statistics", "English", "Statistics"))
+
+AovTest <- aov(Salary ~ Gender*Title2 + Title2*Dept + Gender*Dept, data = FacSal)
+
+knitr::kable(anova(AovTest))
+```
+
+
+```{r}
+FacSal2 <- FacSal
+
+```
+
