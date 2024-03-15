@@ -1,34 +1,102 @@
 ---
-title: "Project_1"
-author: "Owen Gould, Boston Gunderson, Ellie Seehorn"
-date: "2024-02-16"
 output: pdf_document
 ---
+---
+title: "Investingating the Relationship between Socioeconomic Factors and Covid-19 Mortality Rate"
+author: "Owen Gould, Boston Gunderson, Ellie Seehorn"
+date: "2024-02-23"
+---
+\newpage 
+
+
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, fig.height = 2, fig.width = 5.5,
+                      fig.align = "center")
 library(dplyr)
 library(ggplot2)
 library(plotly)
 df <- read.csv("https://grinnell-statistics.github.io/sta-310-s24/projects/USStates.csv")
 ```
 
+
+\newpage
+## Introduction
+The Covid-19 pandemic challenged healthcare systems globally, with the prevailing, though not necessarily statistically confirmed, belief being that individuals of lower socioeconomic classes are disproportionately impacted. In this project, we aim to explore this theory. Our results, despite having a couple statistically significant slope coefficients, was ultimately inconclusive, due to the inability to satisfy the linear model's equal variance condition.
+
+## Methods
+
+The pandemic data in the Covid-19 dataset that we are using to find the Covid-19 cases and deaths by state was originally collected by state and local governments during 2020 and 2021: the height of the pandemic, and was compiled by the New York Times.
+
+The Average Household-income, Highschool Graduation rate, and Insurance Rate data between states is from the United States Census Bureau and are measuring data from 2013-2017.
+
+To be able to standardize the impact Covid-19 had between states with differing populations we altered the data by calculating the mortality rate of Covid-19 as a percentage in each state, by dividing the number of deaths due to Covid-19 by the total number of Covid-19 cases in each state (and multiplying by 100 to transform to a percent).
+
+We have decided that the potentially largest socioeconomic factors to look into in this dataset for differences in Covid mortality rate between states were: the average household income in a state, as this may affect the resources each household has access to when dealing with an infection of covid, the percentage of the population of a state that is insured, as this would mean that the people of these states may have an easier way to access healthcare, and the highscool graduation rate (of people aged 25-34), as this may be a good indicator for the people of a states ability to work jobs that may be more likely to be able to socially distance (jobs that would let people work remotely). 
+
+To best see if these three variables explain the differences in the Covid mortality rates between states in a statistically significant manner, we decided that constructing and analyzing simple linear model with all three of these explanatory variables would be a satisfactory approach.
+
+Fitted model: $\hat{y}=8.746654 + 0.056223\text{Insured} -0.136215\text{HighSchool} + 0.005709\text{HouseoldIncome}$.
+Multiple R-squared = $0.3034$ (low). 
+*Variability not super well-explained by linear relationship between resposne and predictors*.
+
+## Analysis and Results
 ```{r}
-# Add `CovidMortalityRate` variable to our data frame
 df <- df %>%
-  mutate(CovidMortalityRate = (deaths / cases) * 100)
-mod <- lm(CovidMortalityRate ~ Insured + HighSchool + HouseholdIncome, data = df)
-summary(mod)
+  mutate(CovidMortalityRate = (deaths/cases)*100)
+plot1 <- ggplot(df, aes(HouseholdIncome, CovidMortalityRate)) +
+  geom_point() +
+  labs(Title = "Covid Mortality Rate vs. Mean Household Income",
+       x = "Mean Household Income ($1000)",
+       y = "Covid Mortality Rate (%)")
+plot2 <- ggplot(df, aes(Insured, CovidMortalityRate)) +
+  geom_point() +
+  labs(Title = "Covid Mortality Rate vs. Percent of Adults 18-64 Insured",
+       x = "Percent of Adults 18-64 Insured",
+       y = "Covid Mortality Rate (%)")
+plot3 <- ggplot(df, aes(HighSchool, CovidMortalityRate)) +
+  geom_point() +
+  labs(Title = "Covid Mortality Rate vs. High School Graduation Rate",
+       x = "High School Graduation Rate (ages 25-34)",
+       y = "Covid Mortality Rate (%)")
+gridExtra::grid.arrange(plot1, plot2, nrow = 1)
+plot3
+```
+Of the plots of response vs each explanatory, the relationship is clearly strongest between Covid mortality and high school graduation rate, where the slope is clearly negative.
+```{r}
+mod <-lm(CovidMortalityRate ~ Insured + HighSchool + HouseholdIncome, data=df)
+knitr::kable(coef(summary(mod)), caption = "F-statistic 6.689 on 3 and 46 DF")
+
+```
+Based on the model summary, we have an F-statistic of 6.677 on 3 and 46 degrees of freedom with an associated p-value of less than 0.001. This is strong evidence that our model would be statistically significant, if the conditions were met.\ In terms of the individual t-tests, we have p-values of $0.00116$, $8.6*10^{-5}$, and $0.39173$ for `Insured`, `HighSchool`, `HouseholdIncome`, respectively. This means that the positive association (with a slope coefficient of about $0.05$) between the percentage of insured adults in a state and Covid mortality rate and the negative association (with a slope coefficient of about $-0.13$) between high school graduation rate and Covid mortality rate would statistically significant, but not the positive relationship (with a slope coefficient of $0.005$) between mean household income and Covid mortality rate.
+
+```{r}
+knitr::kable(confint(mod, c("Insured", "HighSchool", "HouseholdIncome"), level = 0.95))
+```
+In the confidence intervals, only HouseholdIncome, which was not statistically significant to begin with, contains 0. We can say with 95% confidence that the slope coefficient of insured is positive (interesting, because intuitively that doesn't seem like it should cause greater Covid mortality), and the slope coefficient of HighSchool is negative.
+
+```{r e}
+sd <- df %>%
+  summarize(Insured = sd(Insured, na.rm = TRUE),
+            HighSchool = sd(HighSchool, na.rm = TRUE),
+            HouseholdIncome = sd(HouseholdIncome, na.rm = TRUE))
+knitr::kable(sd)
+#knitr::kable((sd[1] > 2*sd[2]) & (sd[2] > 2*sd[3]) & (sd[1] > 2*sd[3]))
+```
+The standard deviations does not meet the equal variance assumption, as they do not all fall within a range of the smallest variance $\cdot 2$.
+
+## Discussion
+The model has two slope coefficients that are statistically significant: high school graduation rate and insured. Of the two, high school graduation rate has the lower value as well as the more visibly evident slope. This would suggest, that, should the model be generalizable, educational attainment by way of high school graduation rate would have a negative association with Covid mortality.
+There are, however, limitations in the data that should be noted before any conclusions are drawn from our data. Firstly, `HouseholdIncome` is measured with the mean, rather than the median. This is noteworthy because the median, as a measure of center, is more sensitive to outliers. This makes the median a more common measure of center because incomes tend to be quite spread out across families, and this metric may better capture the material living standards of the typical family. Secondly, all of the data for our explanatory variables comes from the years 2013-2017, whereas our Covid mortality data is an aggregate as of August 8th, 2021. Our model may look different if the data for our explanatory variables were up to date. Another limitation is that our model did not meet the equal variance assumption, since there were some variables for which the standard deviation was more than twice another. Namely, the standard deviation for `HouseholdIncome` of `r round(sd[3], digits = 2)` was more than twice the standard deviation of `r round(sd[2], digits = 2)`. This strictly limits the generalizability of our model.
+
+### Further Research
+Another variable associated with socioeconomic status available to us was `College`, the graduation rate for adults aged $25-34$. We chose not to include this in our model for simplicity's sake, but it would be worth analyzing separately. It would also be worthwhile to investigate the relationship between Covid mortality rate and a different set of factors, such as political ideology. The response to Covid-19, from government officials and Americans alike, was highly partisan, after all, and creating a model between mortality rate and the Trump vote in a state, for instance, could bring data to assess that perception.
+
+\newpage 
+
+## Appendix
+```{r echo = FALSE, fig.height = 4, fig.width = 5.5, fig.align = "center"}
 plot(mod)
 ```
-Fitted mode: $\hat{y}=8.746654 + 0.056223\text{Insured} -0.136215\text{HighSchool} + 0.005709\text{HouseoldIncome}$.
-Multiple R-squared = $0.3034$ (low). *Variability not super well-explained by linear relationship between resposne and predictors*.
-`Insured` significant (p-value of around $0.001$), `HighSchool` highly significant (p-value of nearly $0$), `HouseholdIncome` not significant (p-value of around $0.39$) *Shows which covariates are statistically significant*.
-F-statistic: 6.667 on 3 and 46 DF with associated p-value of nearly zero. *Overall model is strong*.
-Model assumptions feel fair (move plots to Appendix).
-Check assumptions (of equal variance, etc.) individually?
-Surprising that `Insured` and `HouseholdIncome` were instead positively associated with covid mortality rate and that `HighSchool` was *negatively* associated with covid mortality rate.
-Generalizations: if socioeconomic factors predict health outcomes/response to Covid, generalize to other pandemics?
-Limitations/concerns: `HoldholdIncome` measured with mean instead of median (mean more sensitive to outliers); one data point in time (pandemic and response to it changed over time); reporting of data (Covid morality rate calculations)?
-*Find out if zero is in 95% confint for slope coefficients*
-Further Research: why were the results what we expected?
+
+From the QQ plot, we see strong evidence that our data comes from an approximately normal distribution. From the other three plots, we see strong evidence of homoskedacity. This shows that our data meet some of the assumptions for a linear model, but as mentioned elsewhere, the equal variance assumption is not met, casting doubt on the generalizability of our model as a whole.
