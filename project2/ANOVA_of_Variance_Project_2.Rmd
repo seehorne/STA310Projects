@@ -1,31 +1,47 @@
 ---
-title: "Nested ANoVA ;)"
-author: "Stats Group"
+title: "Nested ANoVA ;) (change this before turning it in)"
+author: "Boston Gunderson, Owen Gould, Ellie Seehorn"
 date: "2024-03-14"
 output: pdf_document
 ---
+\newpage 
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 ```
 
-```{r}
+## Introduction
+
+In 2009, Adelphi University agreed to pay $305,889 to 37 claimants in order to settle a pay discrimination lawsuit filed by the U.S. Equal Employment Opportunity Commission. This prompted a broader discussion of the gender pay gap in academia, including in Iowa, where Prof. Kuiper of Grinnell College collected data on two departments, statistics and English, at the University of Iowa 
+
+## Methods
+
+## Analysis and Results
+
+
+```{r  include=FALSE}
 FacSal <- read.csv("https://grinnell-statistics.github.io/sta-310-s24/projects/Faculty.csv")
 ```
 
-```{r}
+```{r  echo=FALSE}
 Facsal <- FacSal |> 
   mutate(Dept = ifelse(Dept != "Statistics", "English", "Statistics"))
 
-AovTest <- aov(Salary ~ Gender*Title2 + Title2*Dept + Gender*Dept, data = FacSal)
+AovTest <- aov(Salary ~ Title2*Dept + Dept*Gender + Title2*Gender, data = FacSal)
+anova(AovTest)
 
-knitr::kable(anova(AovTest))
+#knitr::kable(anova(AovTest))
 ```
 
 
-```{r}
+```{r include=FALSE}
 FacSal2 <- FacSal
 
 ```
 
+## Discssion
+
+## Further Research
+
+## Appendix
